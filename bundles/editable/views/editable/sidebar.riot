@@ -3,17 +3,19 @@
   <div class={ classes({ 'eden-blocks-sidebar' : true, 'eden-blocks-sidebar-show' : showing }) }>
     <div class="card">
       <div class="card-header">
-        <h5>
-          Select Block
-        </h5>
+        <div class="w-100">
+          <h5>
+            Select Block
+          </h5>
 
-        <ul class="nav nav-tabs card-header-tabs">
-          <li class="nav-item" each={ (tab, i) in getTabs() }>
-            <button class={ classes({ 'nav-link' : true, 'active' : isTab(tab) }) } onclick={ (e) => onTab(e, tab) }>
-              { eden.get('i18n.t')(`cms.category.${tab}`) }
-            </button>
-          </li>
-        </ul>
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item" each={ (tab, i) in getTabs() }>
+              <button class={ classes({ 'nav-link' : true, 'active' : isTab(tab) }) } onclick={ (e) => onTab(e, tab) }>
+                { eden.get('i18n.t')(`cms.category.${tab}`) }
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div class="card-body">
@@ -62,6 +64,9 @@
         this.tab = 'default';
         this.showing = false;
 
+        // bind methods
+        this.onBlock = this.onBlock.bind(this);
+        this.onAddBlock = this.onAddBlock.bind(this);
       }
 
       /**
@@ -144,17 +149,19 @@
         e.stopPropagation();
 
         // set loading
-        this.loading = true;
+        this.loading('add', true);
 
         // update view
         this.update();
+
+        console.log(this.type);
 
         // add block by type
         await this.props.addBlock(this.type);
 
         // set loading
-        this.type    = null;
-        this.loading = false;
+        this.type = null;
+        this.loading('add', false);
 
         // close modal
         this.hide();

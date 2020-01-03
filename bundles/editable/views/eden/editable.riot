@@ -3,7 +3,7 @@
 
     <div each={ (el, i) in placement.get('blocks', []) } class="grid-stack-item" data-gs-x={ el._grid.x || '0' } data-gs-y={ el._grid.y || '0' } data-gs-width={ el._grid.w || 1 } data-gs-height={ el._grid.h || 1 }>
       <div class="grid-stack-item-content">
-        <div editing={ editing } preview={ preview } el={ el } class={ el.class } data-is={ getElement(el) } data-block={ el.uuid } data={ el } block={ el } on-editing={ (e) => onSetEditing(e) } on-save={ (e) => onSaveBlock(e) } on-remove={ (e) => onRemoveBlock(e) } on-refresh={ (e) => onRefreshBlock(e) } placement={ i } i={ i } />
+        <div editing={ editing } preview={ preview } el={ el } class={ el.class } is={ getElement(el) } data-block={ el.uuid } data={ el } block={ el } on-editing={ (e) => onEditing(e) } on-save={ (e) => onSaveBlock(e) } on-remove={ (e) => onRemoveBlock(e) } on-refresh={ (e) => onRefreshBlock(e) } placement={ i } i={ i } />
       </div>
     </div>
 
@@ -15,7 +15,7 @@
       </div>
     </div>
   </div>
-  <editable-sidebar ref={ ref('sidebar') } blocks={ props.blocks } add-block={ (e) => onAddBlock(type) } />
+  <editable-sidebar ref={ ref('sidebar') } blocks={ props.blocks } add-block={ (type) => onAddBlock(type) } />
 
   <script>
     // import base
@@ -41,7 +41,9 @@
         Model(this);
 
         // bind methods
+        this.onEditing = this.onEditing.bind(this);
         this.onAddPress = this.onAddPress.bind(this);
+        this.onRemoveBlock = this.onRemoveBlock.bind(this);
 
         // set values
         this.show      = true;
@@ -98,6 +100,16 @@
         // open modal
         if (this.refs.sidebar) this.refs.sidebar.show();
       }
+      
+      /**
+       * set editing
+       *
+       * @param  {Object} block
+       */
+      onEditing(block) {
+        // set editing
+        this.editing = block ? block.uuid : null;
+      }
 
       /**
       * adds block by type
@@ -107,6 +119,9 @@
       * @return {*}
       */
       async onAddBlock (type) {
+        // set type
+        if (!type) type = this.refs.sidebar.type;
+
         // get uuid
         const dotProp = require('dot-prop-immutable');
 
@@ -228,6 +243,29 @@
           // update view
           this.updateGrid();
         }
+      }
+
+      /**
+       * on refresh block
+       *
+       * @param  {Event}  e
+       * @param  {Object} block
+       */
+      async onRemoveBlock (block, data, placement) {
+        // set loading
+        block.removing = true;
+
+        // update view
+        this.update();
+
+        // get positions
+        const blocks = (this.placement.get('blocks') || []).filter((b) => b.uuid !== block.uuid);
+
+        // set blocks
+        this.placement.set('blocks', blocks);
+
+        // save placement
+        await this.savePlacement();
       }
 
       /**
