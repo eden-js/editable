@@ -9,9 +9,9 @@
           </h5>
 
           <ul class="nav nav-tabs card-header-tabs">
-            <li class="nav-item" each={ (tab, i) in getTabs() }>
-              <button class={ classes({ 'nav-link' : true, 'active' : isTab(tab) }) } onclick={ (e) => onTab(e, tab) }>
-                { eden.get('i18n.t')(`cms.category.${tab}`) }
+            <li class="nav-item" each={ (t, i) in getTabs() }>
+              <button class={ classes({ 'nav-link' : true, 'active' : isTab(t) }) } onclick={ (e) => onTab(e, t) }>
+                { eden.get('i18n.t')(`cms.category.${t}`) }
               </button>
             </li>
           </ul>
@@ -23,7 +23,7 @@
           <input class="form-control" placeholder="search" type="Search" onkeyup={ (e) => onSearch(e) } onchange={ (e) => onSearch(e) } ref="search" />
         </div>
         <ul class="list-group">
-          <li each={ (block, i) in getBlocks(tab) } class={ classes({ 'list-group-item list-group-item-action flex-column align-items-start' : true, 'active' : isActive(block) }) } onclick={ (e) => onBlock(e, block) }>
+          <li each={ (block, i) in getBlocks() } class={ classes({ 'list-group-item list-group-item-action flex-column align-items-start' : true, 'active' : isActive(block) }) } onclick={ (e) => onBlock(e, block) }>
             <div class="d-flex w-100 justify-content-between">
               <h5 class="mb-1">
                 { block.opts.title }
@@ -61,10 +61,11 @@
         super.onBeforeMount(...arguments);
         
         // set showing
-        this.tab = 'default';
+        this.tab = this.tab || 'default';
         this.showing = false;
 
         // bind methods
+        this.onTab = this.onTab.bind(this);
         this.onBlock = this.onBlock.bind(this);
         this.onAddBlock = this.onAddBlock.bind(this);
       }
@@ -154,8 +155,6 @@
         // update view
         this.update();
 
-        console.log(this.type);
-
         // add block by type
         await this.props.addBlock(this.type);
 
@@ -189,7 +188,10 @@
       *
       * @return {*}
       */
-      getBlocks (category = 'default') {
+      getBlocks () {
+        // check category
+        const category = this.tab;
+
         // return sorted blocks
         let rtn = (this.props.blocks || []).sort((a, b) => {
           // Return sort
@@ -201,11 +203,6 @@
           rtn = rtn.filter((block) => {
             // set category
             return (block.opts.categories || []).includes(category);
-          });
-        } else {
-          rtn = rtn.filter((block) => {
-            // check categories
-            return !(block.opts.categories);
           });
         }
 

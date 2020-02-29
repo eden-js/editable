@@ -3,12 +3,12 @@
 
     <div each={ (el, i) in placement.get('blocks', []) } class="grid-stack-item" data-gs-x={ el._grid.x || '0' } data-gs-y={ el._grid.y || '0' } data-gs-width={ el._grid.w || 1 } data-gs-height={ el._grid.h || 1 }>
       <div class="grid-stack-item-content">
-        <div editing={ editing } preview={ preview } el={ el } class={ el.class } is={ getElement(el) } data-block={ el.uuid } data={ el } block={ el } on-editing={ (e) => onEditing(e) } on-save={ (e) => onSaveBlock(e) } on-remove={ (e) => onRemoveBlock(e) } on-refresh={ (e) => onRefreshBlock(e) } placement={ i } i={ i } />
+        <div editing={ editing } preview={ preview } el={ el } class={ el.class } is={ getElement(el) } data-block={ el.uuid } data={ el } block={ el } on-editing={ (e) => onEditing(e) } on-save={ (e) => onSaveBlock(e) } on-remove={ (e) => onRemoveBlock(e) } on-refresh={ (e) => onRefreshBlock(e) } set={ (key, value) => onSetBlock(el, key, value) } placement={ i } i={ i } />
       </div>
     </div>
 
     <div class="grid-stack-item grid-stack-item-add" data-gs-x={ placement.get('add._grid.x') || '0' } data-gs-y={ placement.get('add._grid.y') || '0' } data-gs-width={ placement.get('add._grid.w') || '4' } data-gs-height={ placement.get('add._grid.h') || '2' }>
-      <div class="grid-stack-item-content">
+      <div class="grid-stack-item-content move">
         <button ref="on-add" class="grid-add" onclick={ (e) => onAddPress(e) }>
           Add Widget
         </button>
@@ -42,6 +42,7 @@
 
         // bind methods
         this.onEditing = this.onEditing.bind(this);
+        this.onSetBlock = this.onSetBlock.bind(this);
         this.onAddPress = this.onAddPress.bind(this);
         this.onRemoveBlock = this.onRemoveBlock.bind(this);
 
@@ -246,6 +247,32 @@
       }
 
       /**
+       * on set block
+       */
+      async onSetBlock (block, key, value) {
+        // get uuid
+        const dotProp = require('dot-prop');
+
+        // set
+        dotProp.set(block, key, value);
+
+        // update
+        this.update();
+
+        // log data
+        const res = await fetch(`/editable/placement/${this.placement.get('id')}/block/save`, {
+          'body' : JSON.stringify({
+            'block' : block
+          }),
+          'method'  : 'post',
+          'headers' : {
+            'Content-Type' : 'application/json'
+          },
+          'credentials' : 'same-origin'
+        });
+      }
+
+      /**
        * on refresh block
        *
        * @param  {Event}  e
@@ -340,17 +367,24 @@
           require('jquery-ui/ui/widgets/draggable');
 
           // require gridstack
-          require('gridstack/dist/gridstack');
+          require('editable/public/js/gridstack');
 
           // require local
           require('editable/public/js/jquery-ui');
         }
         
         // gridstack
-        jQuery(this.$('[ref="editable"]')).gridstack({}).on('change', (e) => {
+        $(this.$('[ref="editable"]')).gridstack({
+          draggable : {
+            handle : '.move',
+          }
+        }).on('change', (e) => {
+          // check target
+          if (this.$('[ref="editable"]') !== e.target) return true;
+
           // data-gs-x="0" data-gs-y="1" data-gs-width="12" data-gs-height="4"
           // commit to items
-          jQuery('.grid-stack-item', this.$('[ref="editable"]')).each((i, item) => {
+          $('.grid-stack-item', this.$('[ref="editable"]')).each((i, item) => {
             // child
             const child = jQuery(item);
             const data = child.data();
@@ -384,14 +418,17 @@
           this.savePlacement();
         });
 
-        // data
-        this.grid = jQuery(this.$('[ref="editable"]')).data('gridstack');
+        // set grid
+        this.grid = $(this.$('[ref="editable"]')).data('gridstack');
       }
 
       /**
       * updates grid
       */
       updateGrid() {
+        // check grid
+        if (!this.grid || !this.grid.destroy) return;
+        
         // remove grid
         this.grid.destroy();
 
