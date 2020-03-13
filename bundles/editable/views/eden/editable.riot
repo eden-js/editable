@@ -293,6 +293,9 @@
 
         // save placement
         await this.savePlacement();
+
+        // remove backdrop
+        if ($('.modal-backdrop')) $('.modal-backdrop').remove();
       }
 
       /**
