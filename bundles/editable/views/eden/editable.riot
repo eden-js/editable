@@ -9,9 +9,11 @@
 
     <div class="grid-stack-item grid-stack-item-add" data-gs-x={ placement.get('add._grid.x') || '0' } data-gs-y={ placement.get('add._grid.y') || '0' } data-gs-width={ placement.get('add._grid.w') || '4' } data-gs-height={ placement.get('add._grid.h') || '2' }>
       <div class="grid-stack-item-content move">
-        <button ref="on-add" class="grid-add" onclick={ (e) => onAddPress(e) }>
-          Add Widget
-        </button>
+        <div class="grid-add d-flex align-items-center" onclick={ (e) => onAddPress(e) }>
+          <div class="w-100 text-center">
+            Add Widget
+          </div>
+        </div>
       </div>
     </div>
   </div>
