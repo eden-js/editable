@@ -60,14 +60,13 @@ $animation_speed: .2s;
     overflow : initial;
 
     .eden-block-hover {
-      @include transition(all 0.2s ease);
-
-      left     : 0;
-      right    : 0;
-      bottom   : 100%;
-      opacity  : 0;
-      padding  : ($spacer / 2);
-      position : absolute;
+      left       : 0;
+      right      : 0;
+      bottom     : 100%;
+      opacity    : 0;
+      padding    : ($spacer / 2);
+      position   : absolute;
+      transition : all 0.2s ease;
     }
 
     &:hover .eden-block-hover {
