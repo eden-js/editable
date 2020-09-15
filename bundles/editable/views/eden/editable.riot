@@ -350,40 +350,15 @@
       * init dragula
       */
       initGrid () {
-        // check required
-        if (!this.required) {
-          // set required
-          this.required = true;
-
-          // lodash
-          window._ = require('lodash');
-
-          // require ui
-          require('jquery-ui/ui/data');
-          require('jquery-ui/ui/version');
-          require('jquery-ui/ui/plugin');
-          require('jquery-ui/ui/scroll-parent');
-          require('jquery-ui/ui/safe-blur');
-          require('jquery-ui/ui/safe-active-element');
-          require('jquery-ui/ui/disable-selection');
-          require('jquery-ui/ui/widget');
-          require('jquery-ui/ui/widgets/mouse');
-          require('jquery-ui/ui/widgets/resizable');
-          require('jquery-ui/ui/widgets/draggable');
-
-          // require gridstack
-          require('editable/public/js/gridstack');
-
-          // require local
-          require('editable/public/js/jquery-ui');
-        }
+        // require gridstack
+        const GridStack = require('gridstack').GridStack;
         
         // gridstack
-        $(this.$('[ref="editable"]')).gridstack({
+        GridStack.init({
           draggable : {
-            handle : '.move',
+            handles : '.move',
           }
-        }).on('change', (e) => {
+        }, this.$('[ref="editable"]')).on('change', (e) => {
           // check target
           if (this.$('[ref="editable"]') !== e.target) return true;
 
@@ -393,6 +368,8 @@
             // child
             const child = jQuery(item);
             const data = child.data();
+
+            console.log(data);
 
             // get block
             const block = this.placement.get('blocks', []).find(b => b.uuid === jQuery('[data-block]', item).attr('data-block'));
