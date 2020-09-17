@@ -1,70 +1,104 @@
-
-  /**
-  * @class JQueryUIGridStackDragDropPlugin
-  * jQuery UI implementation of drag'n'drop gridstack plugin.
-  */
- function JQueryUIGridStackDragDropPlugin(grid) {
-  GridStackUI.GridStackDragDropPlugin.call(this, grid);
+"use strict";
+// gridstack-dd-jqueryui.ts 2.0.0 @preserve
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
+Object.defineProperty(exports, "__esModule", { value: true });
+const gridstack_dd_1 = require("./gridstack-dd");
+// TODO: TEMPORARY until can remove jquery-ui drag&drop and this class and use HTML5 instead !
+// see https://stackoverflow.com/questions/35345760/importing-jqueryui-with-typescript-and-requirejs
+const $ = (typeof window !== 'undefined' ? window.$ : {});
+exports.$ = $;
 
-GridStackUI.GridStackDragDropPlugin.registerPlugin(JQueryUIGridStackDragDropPlugin);
-
-JQueryUIGridStackDragDropPlugin.prototype = Object.create(GridStackUI.GridStackDragDropPlugin.prototype);
-JQueryUIGridStackDragDropPlugin.prototype.constructor = JQueryUIGridStackDragDropPlugin;
-
-JQueryUIGridStackDragDropPlugin.prototype.resizable = function(el, opts) {
-  el = $(el);
-  if (opts === 'disable' || opts === 'enable') {
-    el.resizable(opts);
-  } else if (opts === 'option') {
-    var key = arguments[2];
-    var value = arguments[3];
-    el.resizable(opts, key, value);
-  } else {
-    var handles = el.data('gs-resize-handles') ? el.data('gs-resize-handles') :
-      this.grid.opts.resizable.handles;
-    el.resizable($.extend({}, this.grid.opts.resizable, {
-      handles: handles
-    }, {
-      start: opts.start || function() {},
-      stop: opts.stop || function() {},
-      resize: opts.resize || function() {}
-    }));
-  }
-  return this;
-};
-
-JQueryUIGridStackDragDropPlugin.prototype.draggable = function(el, opts) {
-  el = $(el);
-  if (opts === 'disable' || opts === 'enable') {
-    el.draggable(opts);
-  } else {
-    el.draggable($.extend({}, this.grid.opts.draggable, {
-      containment: (this.grid.opts.isNested && !this.grid.opts.dragOut) ?
-        this.grid.container.parent() :
-        (this.grid.opts.draggable.containment || null),
-      start: opts.start || function() {},
-      stop: opts.stop || function() {},
-      drag: opts.drag || function() {}
-    }));
-  }
-  return this;
-};
-
-JQueryUIGridStackDragDropPlugin.prototype.droppable = function(el, opts) {
-  el = $(el);
-  el.droppable(opts);
-  return this;
-};
-
-JQueryUIGridStackDragDropPlugin.prototype.isDroppable = function(el, opts) {
-  el = $(el);
-  return Boolean(el.data('droppable'));
-};
-
-JQueryUIGridStackDragDropPlugin.prototype.on = function(el, eventName, callback) {
-  $(el).on(eventName, callback);
-  return this;
-};
-
-window.JQueryUIGridStackDragDropPlugin = JQueryUIGridStackDragDropPlugin;
+/**
+ * Jquery-ui based drag'n'drop plugin.
+ */
+class GridStackDDJQueryUI extends gridstack_dd_1.GridStackDD {
+    constructor(grid) {
+        super(grid);
+    }
+    resizable(el, opts, key, value) {
+        let $el = $(el);
+        if (opts === 'disable' || opts === 'enable') {
+            $el.resizable(opts);
+        }
+        else if (opts === 'destroy') {
+            if ($el.data('ui-resizable')) { // error to call destroy if not there
+                $el.resizable(opts);
+            }
+        }
+        else if (opts === 'option') {
+            $el.resizable(opts, key, value);
+        }
+        else {
+            let handles = $el.data('gs-resize-handles') ? $el.data('gs-resize-handles') : this.grid.opts.resizable.handles;
+            $el.resizable(Object.assign({}, this.grid.opts.resizable, { handles: handles }, {
+                start: opts.start,
+                stop: opts.stop,
+                resize: opts.resize // || function() {}
+            }));
+        }
+        return this;
+    }
+    draggable(el, opts, key, value) {
+        let $el = $(el);
+        if (opts === 'disable' || opts === 'enable') {
+            $el.draggable(opts);
+        }
+        else if (opts === 'destroy') {
+            if ($el.data('ui-draggable')) { // error to call destroy if not there
+                $el.draggable(opts);
+            }
+        }
+        else if (opts === 'option') {
+            $el.draggable(opts, key, value);
+        }
+        else {
+            $el.draggable(Object.assign({}, this.grid.opts.draggable, {
+                containment: (this.grid.opts._isNested && !this.grid.opts.dragOut) ?
+                    $(this.grid.el).parent() : (this.grid.opts.draggable.containment || null),
+                start: opts.start,
+                stop: opts.stop,
+                drag: opts.drag // || function() {}
+            }));
+        }
+        return this;
+    }
+    dragIn(el, opts) {
+        let $el = $(el); // workaround Type 'string' is not assignable to type 'PlainObject<any>' - see https://github.com/DefinitelyTyped/DefinitelyTyped/issues/29312
+        $el.draggable(opts);
+        return this;
+    }
+    droppable(el, opts, key, value) {
+        let $el = $(el);
+        if (typeof opts.accept === 'function' && !opts._accept) {
+            // convert jquery event to generic element
+            opts._accept = opts.accept;
+            opts.accept = ($el) => opts._accept($el.get(0));
+        }
+        $el.droppable(opts, key, value);
+        return this;
+    }
+    isDroppable(el) {
+        let $el = $(el);
+        return Boolean($el.data('ui-droppable'));
+    }
+    isDraggable(el) {
+        let $el = $(el); // workaround Type 'string' is not assignable to type 'PlainObject<any>' - see https://github.com/DefinitelyTyped/DefinitelyTyped/issues/29312
+        return Boolean($el.data('ui-draggable'));
+    }
+    on(el, name, callback) {
+        let $el = $(el);
+        $el.on(name, (event, ui) => { callback(event, ui.draggable ? ui.draggable[0] : event.target, ui.helper ? ui.helper[0] : null); });
+        return this;
+    }
+    off(el, name) {
+        let $el = $(el);
+        $el.off(name);
+        return this;
+    }
+}
+exports.GridStackDDJQueryUI = GridStackDDJQueryUI;
+// finally register ourself
+gridstack_dd_1.GridStackDD.registerPlugin(GridStackDDJQueryUI);
+//# sourceMappingURL=gridstack-dd-jqueryui.js.map

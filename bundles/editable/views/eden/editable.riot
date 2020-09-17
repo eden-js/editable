@@ -351,7 +351,26 @@
       */
       initGrid () {
         // require gridstack
-        const GridStack = require('gridstack').GridStack;
+
+
+        // require ui
+        require('jquery-ui/ui/data');
+        require('jquery-ui/ui/version');
+        require('jquery-ui/ui/plugin');
+        require('jquery-ui/ui/scroll-parent');
+        require('jquery-ui/ui/safe-blur');
+        require('jquery-ui/ui/safe-active-element');
+        require('jquery-ui/ui/disable-selection');
+        require('jquery-ui/ui/widget');
+        require('jquery-ui/ui/widgets/mouse');
+        require('jquery-ui/ui/widgets/resizable');
+        require('jquery-ui/ui/widgets/draggable');
+
+        // require gridstack
+        const GridStack = require('editable/public/js/gridstack').GridStack;
+
+        // require local
+        require('editable/public/js/jquery-ui');
         
         // gridstack
         GridStack.init({
@@ -366,11 +385,11 @@
           // commit to items
           $('.grid-stack-item', this.$('[ref="editable"]')).each((i, item) => {
             // child
-            const child = jQuery(item);
+            const child = $(item);
             const data = child.data();
 
             // get block
-            const block = this.placement.get('blocks', []).find(b => b.uuid === jQuery('[data-block]', item).attr('data-block'));
+            const block = this.placement.get('blocks', []).find(b => b.uuid === $('[data-block]', item).attr('data-block'));
             
             // check block
             if (child.is('.grid-stack-item-add')) {
