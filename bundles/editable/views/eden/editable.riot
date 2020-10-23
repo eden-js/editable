@@ -3,13 +3,13 @@
 
     <div each={ (el, i) in placement.get('blocks', []) } class="grid-stack-item" data-gs-x={ el._grid.x || '0' } data-gs-y={ el._grid.y || '0' } data-gs-width={ el._grid.w || 1 } data-gs-height={ el._grid.h || 1 }>
       <div class="grid-stack-item-content">
-        <div editing={ editing } preview={ preview } el={ el } class={ el.class } is={ getElement(el) } data-block={ el.uuid } data={ el } block={ el } on-editing={ (e) => onEditing(e) } on-save={ (e) => onSaveBlock(e) } on-remove={ (e) => onRemoveBlock(e) } on-refresh={ (e) => onRefreshBlock(e) } set={ (key, value) => onSetBlock(el, key, value) } placement={ i } i={ i } />
+        <div editing={ editing } preview={ preview } el={ el } class={ el.class } is={ getElement(el) } data-block={ el.uuid } data={ el } block={ el } on-editing={ (e) => onEdit(e) } on-save={ (e) => onSaveBlock(e) } on-remove={ (e) => onRemove(e) } on-refresh={ (e) => onRefreshBlock(e) } set={ (key, value) => onSet(el, key, value) } placement={ i } i={ i } />
       </div>
     </div>
 
     <div class="grid-stack-item grid-stack-item-add" data-gs-x={ placement.get('add._grid.x') || '0' } data-gs-y={ placement.get('add._grid.y') || '0' } data-gs-width={ placement.get('add._grid.w') || '4' } data-gs-height={ placement.get('add._grid.h') || '2' }>
       <div class="grid-stack-item-content move">
-        <div class="grid-add d-flex align-items-center" onclick={ (e) => onAddPress(e) }>
+        <div class="grid-add d-flex align-items-center" onclick={ (e) => onCreate(e) }>
           <div class="w-100 text-center">
             Add Widget
           </div>
@@ -43,10 +43,10 @@
         Model(this);
 
         // bind methods
-        this.onEditing = this.onEditing.bind(this);
-        this.onSetBlock = this.onSetBlock.bind(this);
-        this.onAddPress = this.onAddPress.bind(this);
-        this.onRemoveBlock = this.onRemoveBlock.bind(this);
+        this.onSet = this.onSet.bind(this);
+        this.onEdit = this.onEdit.bind(this);
+        this.onCreate = this.onCreate.bind(this);
+        this.onRemove = this.onRemove.bind(this);
 
         // set values
         this.show      = true;
@@ -95,7 +95,7 @@
       *
       * @return {*}
       */
-      onAddPress (e) {
+      onCreate (e) {
         // prevent
         e.preventDefault();
         e.stopPropagation();
@@ -109,7 +109,7 @@
        *
        * @param  {Object} block
        */
-      onEditing(block) {
+      onEdit(block) {
         // set editing
         this.editing = block ? block.uuid : null;
       }
@@ -251,7 +251,7 @@
       /**
        * on set block
        */
-      async onSetBlock (block, key, value) {
+      async onSet (block, key, value) {
         // get uuid
         const dotProp = require('dot-prop');
 
@@ -280,7 +280,7 @@
        * @param  {Event}  e
        * @param  {Object} block
        */
-      async onRemoveBlock (block, data, placement) {
+      async onRemove (block, data, placement) {
         // set loading
         block.removing = true;
 
