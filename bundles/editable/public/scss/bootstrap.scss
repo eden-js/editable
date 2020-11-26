@@ -8,8 +8,8 @@ $horizontal_padding: $grid-gutter-width;
 $vertical_padding: $grid-gutter-width;
 $animation_speed: .2s;
 
-@import '~gridstack/dist/gridstack';
-@import '~gridstack/dist/gridstack-extra';
+@import '~gridstack/dist/src/gridstack';
+@import '~gridstack/dist/src/gridstack-extra';
 
 // alter stack
 .grid-stack {
